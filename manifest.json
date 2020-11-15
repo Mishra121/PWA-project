@@ -1,0 +1,22 @@
+{
+    "name": "Progressive Web Apps",
+    "short_name": "PWA",
+    "lang": "en",
+    "start_url": "/",
+    "display": "standalone",
+    "theme_color": "pink",
+    "icons": [
+      {
+        "src": "icons/logo-192.png",
+        "sizes": "192x192"
+      },
+      {
+        "src": "icons/logo-512.png",
+        "sizes": "512x512"
+      },
+      {
+        "src": "icons/logo.svg",
+        "sizes": "513x513"
+      }
+    ]
+}
