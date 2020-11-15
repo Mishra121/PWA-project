@@ -35,16 +35,56 @@ function cache(request, response) {
       .then(cache => cache.put(request, response.clone()));
 }
 
-self.addEventListener("fetch", event => {
-    // Cache-First Strategy
-  event.respondWith(
-    caches
-      .match(event.request) // check if the request has already been cached
-      .then(cached => cached || fetch(event.request)) // otherwise request network
-      .then(
-        response =>
-          cache(event.request, response) // put response in cache
-            .then(() => response) // resolve promise with the network response
-      )
+// It was used to fake update response and test it.
+// const delay = ms => _ => new Promise(resolve => setTimeout(() => resolve(_), ms))
+//  + `?per_page=${Math.ceil(Math.random() * 10)}`
+// .then(delay(8000))
+
+function update(request) {
+  return fetch(request.url)
+  .then(
+    response =>
+      cache(request, response) // we can put response in cache
+        .then(() => response) // resolve promise with the Response object
   );
+}
+
+function refresh(response) {
+  return response
+    .json() // read and parse JSON response
+    .then(jsonResponse => {
+      self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          // report and send new data to client
+          client.postMessage(
+            JSON.stringify({
+              type: response.url,
+              data: jsonResponse.data
+            })
+          );
+        });
+      });
+      return jsonResponse.data; // resolve promise with new data
+    });
+}
+
+self.addEventListener("fetch", event => {
+
+  if (event.request.url.includes("/api/")) {
+    // response to API requests, Cache Update Refresh strategy
+    event.respondWith(caches.match(event.request));
+    event.waitUntil(update(event.request).then(refresh));
+  } else {
+    // response to static files requests, Cache-First strategy
+    event.respondWith(
+      caches
+        .match(event.request) // check if the request has already been cached
+        .then(cached => cached || fetch(event.request)) // otherwise request network
+        .then(
+          response =>
+            cache(event.request, response) // put response in cache
+              .then(() => response) // resolve promise with the network response
+        )
+    );
+  }
 });

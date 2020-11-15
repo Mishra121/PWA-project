@@ -48,3 +48,13 @@ if ("serviceWorker" in navigator) {
         console.error("Error registering the Service Worker: ", error);
     });
 }
+
+navigator.serviceWorker.onmessage = event => {
+	const message = JSON.parse(event.data);
+	
+	// detect the type of message and refresh the view
+	if(message && message.type.includes("/api/users")){
+		console.log("List of attendees to date", message.data)
+		renderAttendees(message.data)
+	}
+};
