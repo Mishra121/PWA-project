@@ -18,5 +18,6 @@
         "src": "icons/logo.svg",
         "sizes": "513x513"
       }
-    ]
+    ],
+    "prefer_related_applications": false
 }

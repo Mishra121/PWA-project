@@ -58,3 +58,43 @@ navigator.serviceWorker.onmessage = event => {
 		renderAttendees(message.data)
 	}
 };
+
+
+// ***** Install PWA on device with button *****
+
+let deferredPrompt;
+const installButton = document.getElementById("install_button");
+
+window.addEventListener("beforeinstallprompt", e => {
+	console.log("beforeinstallprompt fired");
+	e.preventDefault();
+	// Stash the event so it can be triggered later.
+	deferredPrompt = e;
+	// Show the install button
+	// installButton.hidden = false;
+	installButton.style.display = "inline";
+	installButton.addEventListener("click", installApp);
+});
+
+function installApp() {
+	// Show the prompt
+	deferredPrompt.prompt();
+	installButton.disabled = true;
+  
+	// Wait for the user to respond to the prompt
+	deferredPrompt.userChoice.then(choiceResult => {
+	  if (choiceResult.outcome === "accepted") {
+		console.log("PWA setup accepted");
+		// installButton.hidden = true;
+		installButton.style.display = "none";
+	  } else {
+		console.log("PWA setup rejected");
+	  }
+	  installButton.disabled = false;
+	  deferredPrompt = null;
+	});
+}
+
+window.addEventListener("appinstalled", evt => {
+	console.log("appinstalled fired", evt);
+});
